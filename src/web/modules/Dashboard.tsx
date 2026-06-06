@@ -21,7 +21,7 @@ import { statusLabels } from "../i18n.js";
 const DAY = 24 * 3600 * 1000;
 
 export function Dashboard() {
-  const { services, userId } = useApp();
+  const { services, userId, notes, addNote, removeNote } = useApp();
   const campaigns = services.repos.campaigns.all();
   const tasks = services.repos.tasks.forUser(userId);
   const notifications = services.notifications.list(userId);
@@ -44,7 +44,13 @@ export function Dashboard() {
       {/* Row 1: Calendar (left) + Upcoming & Summary (right) */}
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(280px, 1fr)", gap: theme.spacing(5), alignItems: "start" }}>
         <Card title="Kalender Campaign">
-          <CalendarWidget items={calendarItems} initial={NOW} />
+          <CalendarWidget
+            items={calendarItems}
+            initial={NOW}
+            notes={notes}
+            onAddNote={addNote}
+            onRemoveNote={removeNote}
+          />
         </Card>
 
         <div style={{ display: "grid", gap: theme.spacing(5) }}>

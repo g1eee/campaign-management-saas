@@ -44,6 +44,10 @@ export interface AppState {
   /** Monotonic counter bumped to force re-render after mutations. */
   version: number;
   refresh: () => void;
+  /** Per-day notes, keyed by start-of-day epoch millis. */
+  notes: Record<number, string[]>;
+  addNote: (dayTs: number, text: string) => void;
+  removeNote: (dayTs: number, index: number) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -125,6 +129,7 @@ function seed(repos: Repositories): void {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<Role>("SPV");
   const [version, setVersion] = useState(0);
+  const [notes, setNotes] = useState<Record<number, string[]>>({});
 
   const services = useMemo<AppServices>(() => {
     const repos = createRepositories();
@@ -150,6 +155,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     userId,
     version,
     refresh: () => setVersion((v) => v + 1),
+    notes,
+    addNote: (dayTs, text) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      setNotes((prev) => ({
+        ...prev,
+        [dayTs]: [...(prev[dayTs] ?? []), trimmed],
+      }));
+    },
+    removeNote: (dayTs, index) =>
+      setNotes((prev) => ({
+        ...prev,
+        [dayTs]: (prev[dayTs] ?? []).filter((_, i) => i !== index),
+      })),
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
