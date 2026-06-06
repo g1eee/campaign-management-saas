@@ -8,10 +8,12 @@
 import React, { useState } from "react";
 import { theme } from "../theme.js";
 import { text } from "../i18n.js";
-import { ModuleId, Role } from "../../domain/types.js";
+import { ModuleId, MODULE_ORDER, Role } from "../../domain/types.js";
 import { permittedModules } from "../../domain/accessPolicy.js";
+import { NAV_MODULES } from "../navConfig.js";
 import { useApp } from "../store.js";
 import { Sidebar } from "./Sidebar.js";
+import { NotificationBell } from "./NotificationBell.js";
 import { ModuleRouter } from "./ModuleRouter.js";
 
 class ErrorBoundary extends React.Component<
@@ -38,9 +40,12 @@ export function AppShell() {
   const { role, setRole, version } = useApp();
   const [active, setActive] = useState<ModuleId>("Dashboard");
 
-  // If the active module is not permitted for the role, fall back to the first.
+  // Visible nav = primary modules that are also permitted for the role.
   const permitted = permittedModules(role);
-  const current = permitted.includes(active) ? active : permitted[0];
+  const visible = MODULE_ORDER.filter(
+    (m) => NAV_MODULES.includes(m) && permitted.includes(m),
+  );
+  const current = visible.includes(active) ? active : visible[0];
 
   return (
     <div
@@ -73,6 +78,7 @@ export function AppShell() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <NotificationBell />
             <label style={{ fontSize: 13, color: theme.colors.textMuted }}>Peran:</label>
             <select
               value={role}

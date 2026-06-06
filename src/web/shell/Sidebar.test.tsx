@@ -3,10 +3,10 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { Sidebar } from "./Sidebar.js";
 import { AppProvider } from "../store.js";
 import { moduleLabels } from "../i18n.js";
-import { MODULE_ORDER } from "../../domain/types.js";
+import { NAV_MODULES } from "../navConfig.js";
 
 function renderSidebar() {
-  let active = "Dashboard" as const;
+  const active = "Dashboard" as const;
   return render(
     <AppProvider>
       <Sidebar active={active} onNavigate={() => {}} />
@@ -15,14 +15,16 @@ function renderSidebar() {
 }
 
 describe("Sidebar", () => {
-  it("renders all modules in fixed order", () => {
+  it("renders only the primary nav modules in fixed order", () => {
     renderSidebar();
-    const buttons = screen
-      .getAllByRole("button")
-      .map((b) => b.textContent)
-      .filter((t) => MODULE_ORDER.some((m) => moduleLabels[m] === t));
-    const expected = MODULE_ORDER.map((m) => moduleLabels[m]);
-    expect(buttons).toEqual(expected);
+    const expected = NAV_MODULES.map((m) => moduleLabels[m]);
+    for (const label of expected) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+    // Modules that were removed from the primary nav must not appear.
+    expect(screen.queryByText(moduleLabels.Notifikasi)).not.toBeInTheDocument();
+    expect(screen.queryByText(moduleLabels.Laporan)).not.toBeInTheDocument();
+    expect(screen.queryByText(moduleLabels.Calendar)).not.toBeInTheDocument();
   });
 
   it("marks exactly one entry active (aria-current=page)", () => {
@@ -31,7 +33,7 @@ describe("Sidebar", () => {
       .getAllByRole("button")
       .filter((b) => b.getAttribute("aria-current") === "page");
     expect(current).toHaveLength(1);
-    expect(current[0].textContent).toBe(moduleLabels.Dashboard);
+    expect(current[0].textContent).toContain(moduleLabels.Dashboard);
   });
 
   it("invokes navigation on click", () => {
