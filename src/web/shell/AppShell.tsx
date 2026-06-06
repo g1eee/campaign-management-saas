@@ -65,8 +65,12 @@ export function AppShell() {
             justifyContent: "space-between",
             alignItems: "center",
             padding: `${theme.spacing(4)} ${theme.spacing(6)}`,
-            background: theme.colors.surface,
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(8px)",
             borderBottom: `1px solid ${theme.colors.border}`,
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
           }}
         >
           <div>

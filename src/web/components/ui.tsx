@@ -195,6 +195,7 @@ export function Button({
     <button
       onClick={onClick}
       disabled={disabled}
+      className="ch-clickable"
       style={{
         background: bg,
         color,

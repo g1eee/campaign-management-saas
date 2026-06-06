@@ -25,39 +25,73 @@ export function TugasSaya() {
 
   if (tasks.length === 0) return <EmptyState message="Tidak ada tugas untuk Anda." />;
 
+  const statusTone: Record<TaskStatus, { bg: string; fg: string; label: string }> = {
+    Open: { bg: theme.colors.surfaceAlt, fg: theme.colors.textMuted, label: "Terbuka" },
+    InProgress: { bg: theme.colors.primarySoft, fg: theme.colors.primary, label: "Dikerjakan" },
+    Done: { bg: theme.colors.successSoft, fg: theme.colors.success, label: "Selesai" },
+  };
+
+  const fmtDate = (ts: number) =>
+    new Date(ts).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
   return (
     <Card title="Tugas Saya">
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-        <thead>
-          <tr style={{ textAlign: "left", color: theme.colors.textMuted }}>
-            <th style={th}>Tugas</th>
-            <th style={th}>Tenggat</th>
-            <th style={th}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.map((t) => (
-            <tr key={t.id} style={{ borderTop: `1px solid ${theme.colors.border}` }}>
-              <td style={td}>{t.title}</td>
-              <td style={td}>{new Date(t.deadline).toLocaleDateString("id-ID")}</td>
-              <td style={td}>
-                <select
-                  value={t.status}
-                  onChange={(e) => {
-                    services.tasks.updateStatus(userId, t.id, e.target.value as TaskStatus);
-                    refresh();
-                  }}
-                  style={selectStyle}
-                >
-                  {TASK_STATUSES.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </td>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: theme.font.size.base }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: theme.colors.textMuted }}>
+              <th style={thU}>Tugas</th>
+              <th style={thU}>Terkait</th>
+              <th style={thU}>Tenggat</th>
+              <th style={thU}>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {tasks.map((t) => {
+              const tone = statusTone[t.status];
+              return (
+                <tr key={t.id} className="ch-row" style={{ borderTop: `1px solid ${theme.colors.border}` }}>
+                  <td style={{ ...tdc, fontWeight: 600 }}>{t.title}</td>
+                  <td style={{ ...tdc, color: theme.colors.textMuted }}>
+                    {t.linkedRefType ? `${t.linkedRefType} · ${t.linkedRefId}` : "-"}
+                  </td>
+                  <td style={tdc}>{fmtDate(t.deadline)}</td>
+                  <td style={tdc}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <span
+                        style={{
+                          background: tone.bg,
+                          color: tone.fg,
+                          borderRadius: 999,
+                          padding: "2px 10px",
+                          fontSize: theme.font.size.sm,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {tone.label}
+                      </span>
+                      <select
+                        value={t.status}
+                        onChange={(e) => {
+                          services.tasks.updateStatus(userId, t.id, e.target.value as TaskStatus);
+                          refresh();
+                        }}
+                        className="ch-input"
+                        style={selectStyle}
+                        aria-label={`Ubah status ${t.title}`}
+                      >
+                        {TASK_STATUSES.map((s) => (
+                          <option key={s} value={s}>{statusTone[s].label}</option>
+                        ))}
+                      </select>
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }
@@ -214,8 +248,14 @@ export function Pengaturan() {
   );
 }
 
-const th: React.CSSProperties = { padding: "8px 6px", fontWeight: 600 };
-const td: React.CSSProperties = { padding: "8px 6px" };
+const thU: React.CSSProperties = {
+  padding: "10px 8px",
+  fontWeight: 600,
+  fontSize: theme.font.size.sm,
+  textTransform: "uppercase",
+  letterSpacing: "0.03em",
+};
+const tdc: React.CSSProperties = { padding: "12px 8px" };
 const selectStyle: React.CSSProperties = {
   padding: "8px 10px",
   borderRadius: 8,

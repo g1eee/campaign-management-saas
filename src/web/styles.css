@@ -1,0 +1,143 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica,
+    Arial, sans-serif;
+  background: #f6f7fb;
+  color: #23263a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  letter-spacing: -0.01em;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  letter-spacing: inherit;
+  color: #23263a;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.02em;
+}
+
+/* Smooth, subtle scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d7d9e6 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #d7d9e6;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #c2c5d6;
+  background-clip: content-box;
+}
+
+/* Reusable interaction helpers */
+.ch-clickable {
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.05s ease,
+    box-shadow 0.15s ease;
+}
+.ch-clickable:hover {
+  filter: brightness(0.98);
+}
+.ch-clickable:active {
+  transform: translateY(1px);
+}
+
+.ch-fade-in {
+  animation: chFadeIn 0.18s ease both;
+}
+@keyframes chFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Range slider (promo discount) */
+.ch-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #e7e4fb;
+  outline: none;
+  cursor: pointer;
+}
+.ch-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #7c6cf0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(35, 38, 58, 0.25);
+  cursor: pointer;
+}
+.ch-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #7c6cf0;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(35, 38, 58, 0.25);
+  cursor: pointer;
+}
+
+/* Table row hover */
+.ch-row:hover {
+  background: #f4f5fa;
+}
+
+/* Inputs focus ring */
+.ch-input:focus {
+  outline: none;
+  border-color: #7c6cf0 !important;
+  box-shadow: 0 0 0 3px #ece9fe;
+}

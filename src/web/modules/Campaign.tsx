@@ -1,7 +1,7 @@
 /**
- * Campaign module: scheme creation form with drag-style promo-option sliders,
- * real-time preview, calculation table with sort + inline status, and the
- * lifecycle actions (submit/calculate/approve/schedule/review).
+ * Campaign module: scheme creation form with promo-option sliders, real-time
+ * preview, calculation table with sort + inline status, and the lifecycle
+ * actions (submit/calculate/approve/schedule/review).
  *
  * _Requirements: 5.1-5.7, 6.1, 7.1-7.6, 8.1-8.5, 8.8_
  */
@@ -77,12 +77,13 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <Card title="Buat Skema Campaign">
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: theme.spacing(4) }}>
-        <div style={{ display: "grid", gap: theme.spacing(3) }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(260px,0.85fr)", gap: theme.spacing(5) }}>
+        <div style={{ display: "grid", gap: theme.spacing(4) }}>
           <Field label="Nama Campaign" error={form.violationFor("name")}>
             <input
               value={form.scheme.name}
               onChange={(e) => form.setScheme((s) => ({ ...s, name: e.target.value }))}
+              className="ch-input"
               style={inputStyle}
               placeholder="cth. Flash Sale 6.6"
             />
@@ -94,6 +95,7 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
               onChange={(e) =>
                 form.setScheme((s) => ({ ...s, category: (e.target.value || null) as CampaignCategory | null }))
               }
+              className="ch-input"
               style={inputStyle}
             >
               <option value="">Pilih kategori</option>
@@ -106,16 +108,31 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
           </Field>
 
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <label style={labelStyle}>Opsi Promo ({form.scheme.promoOptions.length}/{MAX_PROMO_OPTIONS})</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <label style={labelStyle}>
+                Opsi Promo{" "}
+                <span style={{ color: theme.colors.textSoft, fontWeight: 500 }}>
+                  ({form.scheme.promoOptions.length}/{MAX_PROMO_OPTIONS})
+                </span>
+              </label>
               <Button variant="ghost" onClick={addPromo} disabled={form.scheme.promoOptions.length >= MAX_PROMO_OPTIONS}>
                 + Tambah
               </Button>
             </div>
-            <div style={{ display: "grid", gap: 10 }}>
+            <div style={{ display: "grid", gap: 12 }}>
               {form.scheme.promoOptions.map((p) => (
-                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ width: 70, fontSize: 13 }}>{p.label}</span>
+                <div
+                  key={p.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: theme.colors.surfaceAlt,
+                    borderRadius: theme.radius.md,
+                    padding: "8px 12px",
+                  }}
+                >
+                  <span style={{ width: 64, fontSize: theme.font.size.base, fontWeight: 600 }}>{p.label}</span>
                   <input
                     type="range"
                     min={0}
@@ -123,11 +140,27 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
                     step={1}
                     value={p.discountPct}
                     onChange={(e) => setDiscount(p.id, Number(e.target.value))}
+                    className="ch-range"
                     style={{ flex: 1 }}
                     aria-label={`Diskon ${p.label}`}
                   />
-                  <span style={{ width: 44, textAlign: "right", fontWeight: 600 }}>{p.discountPct}%</span>
-                  <button onClick={() => removePromo(p.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: theme.colors.danger }}>
+                  <span
+                    style={{
+                      width: 48,
+                      textAlign: "right",
+                      fontWeight: 700,
+                      color: theme.colors.primary,
+                      fontSize: theme.font.size.md,
+                    }}
+                  >
+                    {p.discountPct}%
+                  </span>
+                  <button
+                    onClick={() => removePromo(p.id)}
+                    aria-label={`Hapus ${p.label}`}
+                    className="ch-clickable"
+                    style={{ border: "none", background: "transparent", cursor: "pointer", color: theme.colors.danger, fontSize: 18, lineHeight: 1 }}
+                  >
                     ×
                   </button>
                 </div>
@@ -142,23 +175,29 @@ function CreateForm({ onCreated }: { onCreated: () => void }) {
         {/* Real-time preview */}
         <div
           style={{
-            background: theme.colors.surfaceAlt,
-            borderRadius: theme.radius.md,
+            background: `linear-gradient(160deg, ${theme.colors.bgAccent}, ${theme.colors.surfaceAlt})`,
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.radius.lg,
             padding: theme.spacing(4),
+            alignSelf: "start",
           }}
         >
-          <h3 style={{ marginTop: 0, fontSize: 14 }}>Pratinjau Real-time</h3>
+          <h3 style={{ marginTop: 0, marginBottom: theme.spacing(3), fontSize: theme.font.size.md }}>
+            Pratinjau Real-time
+          </h3>
           <Row label="Nama" value={form.scheme.name || "-"} />
           <Row label="Kategori" value={form.scheme.category ? categoryLabels[form.scheme.category] : "-"} />
           <Row label="Total Diskon" value={`${form.preview.totalDiscountPct}%`} />
+          <div style={{ height: 1, background: theme.colors.border, margin: "8px 0" }} />
           <Row label="Total Biaya" value={fmt(form.preview.calculation.totalCost)} />
           <Row label="Margin" value={fmt(form.preview.calculation.margin)} />
           <Row
             label="NPM"
             value={npm === "undefined" ? "Tidak terdefinisi" : `${(npm * 100).toFixed(1)}%`}
             warn={form.preview.calculation.warning}
+            big
           />
-          <div style={{ marginTop: theme.spacing(4), display: "flex", gap: 8 }}>
+          <div style={{ marginTop: theme.spacing(4) }}>
             <Button onClick={save} disabled={!form.isValid}>
               Simpan Skema
             </Button>
@@ -192,66 +231,74 @@ function CampaignList() {
     <Card
       title="Daftar Campaign & Kalkulasi"
       action={
-        <select value={sortKey} onChange={(e) => setSortKey(e.target.value as "name" | "npm")} style={inputStyle}>
+        <select value={sortKey} onChange={(e) => setSortKey(e.target.value as "name" | "npm")} className="ch-input" style={inputStyle}>
           <option value="name">Urut: Nama</option>
           <option value="npm">Urut: NPM</option>
         </select>
       }
     >
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-        <thead>
-          <tr style={{ textAlign: "left", color: theme.colors.textMuted }}>
-            <th style={th}>Campaign</th>
-            <th style={th}>Status</th>
-            <th style={th}>Total Biaya</th>
-            <th style={th}>Margin</th>
-            <th style={th}>NPM</th>
-            <th style={th}>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {campaigns.map((c) => {
-            const npm = c.calculation?.npm;
-            return (
-              <tr key={c.id} style={{ borderTop: `1px solid ${theme.colors.border}` }}>
-                <td style={td}>{c.name}</td>
-                <td style={td}>
-                  <StatusBadge status={c.status} />
-                </td>
-                <td style={td}>{c.calculation ? fmt(c.calculation.totalCost) : "-"}</td>
-                <td style={td}>{c.calculation ? fmt(c.calculation.margin) : "-"}</td>
-                <td style={{ ...td, color: c.calculation?.warning ? theme.colors.danger : theme.colors.text }}>
-                  {npm === undefined ? "-" : npm === "undefined" ? "⚠ N/A" : `${(npm * 100).toFixed(1)}%`}
-                </td>
-                <td style={td}>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {role === "SPV" && c.status === "Menunggu" && (
-                      <Button variant="ghost" onClick={() => act(() => services.campaigns.submit(role, c.id, "spv1", NOW))}>
-                        Submit
-                      </Button>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: theme.font.size.base }}>
+          <thead>
+            <tr style={{ textAlign: "left", color: theme.colors.textMuted }}>
+              <th style={th}>Campaign</th>
+              <th style={th}>Status</th>
+              <th style={th}>Total Biaya</th>
+              <th style={th}>Margin</th>
+              <th style={th}>NPM</th>
+              <th style={th}>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map((c) => {
+              const npm = c.calculation?.npm;
+              return (
+                <tr key={c.id} className="ch-row" style={{ borderTop: `1px solid ${theme.colors.border}` }}>
+                  <td style={{ ...td, fontWeight: 600 }}>{c.name}</td>
+                  <td style={td}>
+                    <StatusBadge status={c.status} />
+                  </td>
+                  <td style={td}>{c.calculation ? fmt(c.calculation.totalCost) : "-"}</td>
+                  <td style={td}>{c.calculation ? fmt(c.calculation.margin) : "-"}</td>
+                  <td style={td}>
+                    {npm === undefined ? (
+                      "-"
+                    ) : npm === "undefined" || c.calculation?.warning ? (
+                      <span style={warnPill}>⚠ {npm === "undefined" ? "N/A" : `${(npm * 100).toFixed(1)}%`}</span>
+                    ) : (
+                      <span style={{ fontWeight: 600 }}>{(npm * 100).toFixed(1)}%</span>
                     )}
-                    {role === "Admin" && c.step === "Submit" && (
-                      <Button variant="ghost" onClick={() => act(() => services.campaigns.approve(role, c.id, "adm1", NOW))}>
-                        Setujui
-                      </Button>
-                    )}
-                    {role === "SPV" && c.step === "Eksekusi" && (
-                      <>
-                        <Button variant="ghost" onClick={() => act(() => services.campaigns.reviewApprove(role, c.id, "spv1", NOW))}>
-                          Approve
+                  </td>
+                  <td style={td}>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {role === "SPV" && c.status === "Menunggu" && (
+                        <Button variant="ghost" onClick={() => act(() => services.campaigns.submit(role, c.id, "spv1", NOW))}>
+                          Submit
                         </Button>
-                        <Button variant="danger" onClick={() => act(() => services.campaigns.reviewReject(role, c.id, "spv1", NOW))}>
-                          Tolak
+                      )}
+                      {role === "Admin" && c.step === "Submit" && (
+                        <Button variant="ghost" onClick={() => act(() => services.campaigns.approve(role, c.id, "adm1", NOW))}>
+                          Setujui
                         </Button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                      )}
+                      {role === "SPV" && c.step === "Eksekusi" && (
+                        <>
+                          <Button variant="ghost" onClick={() => act(() => services.campaigns.reviewApprove(role, c.id, "spv1", NOW))}>
+                            Approve
+                          </Button>
+                          <Button variant="danger" onClick={() => act(() => services.campaigns.reviewReject(role, c.id, "spv1", NOW))}>
+                            Tolak
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }
@@ -268,33 +315,50 @@ export function Campaign() {
 
 // --- small helpers ---
 const inputStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  borderRadius: 8,
-  border: `1px solid ${theme.colors.border}`,
-  fontSize: 13,
+  padding: "9px 11px",
+  borderRadius: theme.radius.sm,
+  border: `1px solid ${theme.colors.borderStrong}`,
+  fontSize: theme.font.size.base,
   width: "100%",
   boxSizing: "border-box",
+  background: theme.colors.surface,
 };
-const labelStyle: React.CSSProperties = { fontSize: 13, color: theme.colors.textMuted, fontWeight: 600 };
-const errorStyle: React.CSSProperties = { color: theme.colors.danger, fontSize: 12, marginTop: 4 };
-const th: React.CSSProperties = { padding: "8px 6px", fontWeight: 600 };
-const td: React.CSSProperties = { padding: "8px 6px" };
+const labelStyle: React.CSSProperties = { fontSize: theme.font.size.base, color: theme.colors.textMuted, fontWeight: 600 };
+const errorStyle: React.CSSProperties = { color: theme.colors.danger, fontSize: theme.font.size.sm, marginTop: 6 };
+const th: React.CSSProperties = { padding: "10px 8px", fontWeight: 600, fontSize: theme.font.size.sm, textTransform: "uppercase", letterSpacing: "0.03em" };
+const td: React.CSSProperties = { padding: "12px 8px" };
+const warnPill: React.CSSProperties = {
+  background: theme.colors.dangerSoft,
+  color: theme.colors.danger,
+  borderRadius: 999,
+  padding: "2px 9px",
+  fontSize: theme.font.size.sm,
+  fontWeight: 700,
+};
 
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
       <label style={labelStyle}>{label}</label>
-      <div style={{ marginTop: 4 }}>{children}</div>
+      <div style={{ marginTop: 6 }}>{children}</div>
       {error && <div style={errorStyle}>{error}</div>}
     </div>
   );
 }
 
-function Row({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+function Row({ label, value, warn, big }: { label: string; value: string; warn?: boolean; big?: boolean }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}>
-      <span style={{ color: theme.colors.textMuted, fontSize: 13 }}>{label}</span>
-      <span style={{ fontWeight: 600, color: warn ? theme.colors.danger : theme.colors.text }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "5px 0" }}>
+      <span style={{ color: theme.colors.textMuted, fontSize: theme.font.size.base }}>{label}</span>
+      <span
+        style={{
+          fontWeight: 700,
+          fontSize: big ? theme.font.size.lg : theme.font.size.base,
+          color: warn ? theme.colors.danger : theme.colors.text,
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 }
