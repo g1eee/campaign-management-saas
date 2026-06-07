@@ -53,17 +53,27 @@ export const MODULE_ORDER: readonly ModuleId[] = [
 ] as const;
 
 export type Action =
-  // SPV actions
+  // SPV actions (legacy CampaignHub workflow)
   | "CreateScheme"
   | "SubmitCampaign"
   | "ReviewExecution"
   | "ApproveCampaign"
-  // Admin actions
+  // Admin actions (legacy CampaignHub workflow)
   | "SetStrategy"
   | "CalculateCampaign"
   | "PrepareAsset"
   | "ExecuteTask"
-  | "UpdateProgress";
+  | "UpdateProgress"
+  // Campaign Manager board actions — Admin (Requirement 1.6)
+  | "CreateCampaign"
+  | "EditCampaign"
+  | "MoveCampaign"
+  | "DuplicateCampaign"
+  | "DeleteCampaign"
+  | "BulkAction"
+  // Campaign Manager board actions — SPV (Requirement 1.7)
+  | "CreateTemplate"
+  | "ReviewCampaign";
 
 // ---------------------------------------------------------------------------
 // Campaign lifecycle (Requirement 9.1)
@@ -403,3 +413,73 @@ export const MAX_FAILED_ATTEMPTS = 5; // (Requirement 1.6)
 export const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes (Requirement 1.6)
 export const DEADLINE_REMINDER_LEAD_MS = 24 * 60 * 60 * 1000; // 24 hours (Requirement 17.2)
 export const DASHBOARD_LIST_LIMIT = 10; // (Requirement 4.2)
+
+// ---------------------------------------------------------------------------
+// Campaign Manager pivot: Kanban board, quick add, templates, duplication,
+// bulk actions, search, and command palette (Requirements 2, 3, 7, 8, 10, 11, 12)
+// ---------------------------------------------------------------------------
+
+// --- Template_Campaign (Requirement 7) ---
+
+/** Minimum number of Opsi_Promo in a saved Template_Campaign (Requirement 7.1). */
+export const TEMPLATE_MIN_PROMOS = 1;
+/** Maximum number of Opsi_Promo in a saved Template_Campaign (Requirement 7.1, 7.3). */
+export const TEMPLATE_MAX_PROMOS = 50;
+/** Minimum number of target Toko in a saved Template_Campaign (Requirement 7.1). */
+export const TEMPLATE_MIN_STORES = 1;
+/** Maximum number of target Toko in a saved Template_Campaign (Requirement 7.1, 7.3). */
+export const TEMPLATE_MAX_STORES = 1000;
+
+/**
+ * A reusable Template_Campaign (Requirement 7). Holds the configurable
+ * Skema_Campaign values that can be copied into new Campaigns. Reuses the
+ * shared `CampaignCategory`, `PromoOption`, and `StoreId` types so a template
+ * stays aligned with `Campaign`/`CampaignScheme`.
+ */
+export interface CampaignTemplate {
+  id: string;
+  name: string;
+  /** Exactly one category is required (Requirement 7.1, 7.2). */
+  category: CampaignCategory;
+  /** 1..50 entries (Requirement 7.1, 7.3). */
+  promoOptions: PromoOption[];
+  /** 1..1000 entries (Requirement 7.1, 7.3). */
+  targetStoreIds: StoreId[];
+  createdAt: EpochMillis;
+}
+
+// --- Duplikasi Campaign (Requirement 8) ---
+
+/** Copy marker text prepended to a duplicated Campaign name (Requirement 8.1). */
+export const COPY_MARKER = "Salinan ";
+/** Maximum length of a duplicated Campaign name (Requirement 8.5). */
+export const DUPLICATE_NAME_MAX = 200;
+
+// --- Aksi Massal (Requirement 10) ---
+
+/** Minimum selection size for a bulk action (Requirement 10.1, 10.2). */
+export const BULK_MIN = 1;
+/** Maximum selection size for a single bulk action (Requirement 10.7, 10.8). */
+export const BULK_MAX = 100;
+
+// --- Pencarian (Requirement 11) ---
+
+/** Maximum length of search text accepted by Layanan_Pencarian (Requirement 11.6). */
+export const SEARCH_MAX = 100;
+
+// --- Palet_Perintah (Requirement 12) ---
+
+/** Maximum number of commands shown in Palet_Perintah (Requirement 12.2). */
+export const PALETTE_MAX_VISIBLE = 50;
+/** Maximum length of a Palet_Perintah query string (Requirement 12.3). */
+export const PALETTE_QUERY_MAX = 100;
+
+// --- Campaign_Draft default (Requirements 3.1, 2.5) ---
+
+/**
+ * Neutral default Campaign_Category assigned to a Campaign_Draft created via
+ * Tambah_Cepat. `Campaign.category` is non-null, so a draft needs a concrete
+ * value; the board view applies a neutral fallback color for drafts whose
+ * category has no registered color (Requirement 2.5).
+ */
+export const DEFAULT_DRAFT_CATEGORY: CampaignCategory = "Lokal";

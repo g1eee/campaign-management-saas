@@ -15,6 +15,7 @@ import {
   Campaign,
   CampaignAudit,
   CampaignId,
+  CampaignTemplate,
   MasterDataId,
   MasterDataRecord,
   Notification,
@@ -68,6 +69,16 @@ export class TaskRepository extends InMemoryRepository<Task, TaskId> {
   }
 }
 
+/**
+ * Stores reusable Template_Campaign records (Requirement 7.1). Keyed by the
+ * template id; substitutable by a SQL-backed implementation without changing
+ * callers.
+ */
+export class TemplateRepository extends InMemoryRepository<
+  CampaignTemplate,
+  string
+> {}
+
 /** Append-only audit log (Requirement 9.3). */
 export class AuditRepository {
   private readonly records: CampaignAudit[] = [];
@@ -110,6 +121,7 @@ export interface Repositories {
   stores: StoreRepository;
   notifications: NotificationRepository;
   tasks: TaskRepository;
+  templates: TemplateRepository;
   audit: AuditRepository;
   masterData: MasterDataRepository;
   directory: UserDirectory;
@@ -137,6 +149,7 @@ export function createRepositories(): Repositories {
     stores: new StoreRepository(),
     notifications: new NotificationRepository(),
     tasks: new TaskRepository(),
+    templates: new TemplateRepository(),
     audit: new AuditRepository(),
     masterData: new MasterDataRepository(),
     directory: new UserDirectory(),

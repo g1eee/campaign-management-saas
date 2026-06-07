@@ -8,7 +8,7 @@ import React from "react";
 import { ModuleId } from "../../domain/types.js";
 import { Dashboard } from "../modules/Dashboard.js";
 import { Calendar } from "../modules/Calendar.js";
-import { Campaign } from "../modules/Campaign.js";
+import { Board } from "../modules/Board.js";
 import { Workflow } from "../modules/Workflow.js";
 import { AdsCPAS, Banner, HostLive, IGStory } from "../modules/Assets.js";
 import { Toko } from "../modules/Toko.js";
@@ -23,7 +23,8 @@ import {
 const MODULES: Record<ModuleId, React.ComponentType> = {
   Dashboard,
   Calendar,
-  Campaign,
+  // Pivot: the primary "Campaign" view is the Papan_Campaign Kanban board.
+  Campaign: Board,
   Workflow,
   Banner,
   Toko,

@@ -11,13 +11,18 @@
 
 import { Action, ModuleId, MODULE_ORDER, Principal, Role } from "./types.js";
 
-/** Actions each role may perform (Requirement 2.1, 2.2). */
+/** Actions each role may perform (Requirement 2.1, 2.2, 1.6, 1.7). */
 const ROLE_ACTIONS: Record<Role, ReadonlySet<Action>> = {
   SPV: new Set<Action>([
     "CreateScheme",
     "SubmitCampaign",
     "ReviewExecution",
     "ApproveCampaign",
+    // Campaign Manager board actions — SPV (Requirement 1.7):
+    // membuat Template_Campaign, meninjau Campaign, menyetujui Campaign.
+    "CreateTemplate",
+    "ReviewCampaign",
+    // "ApproveCampaign" sudah tercantum di atas dan memenuhi "menyetujui Campaign".
   ]),
   Admin: new Set<Action>([
     "SetStrategy",
@@ -25,6 +30,14 @@ const ROLE_ACTIONS: Record<Role, ReadonlySet<Action>> = {
     "PrepareAsset",
     "ExecuteTask",
     "UpdateProgress",
+    // Campaign Manager board actions — Admin (Requirement 1.6):
+    // buat, sunting, pindah, duplikasi, hapus Campaign, dan aksi massal.
+    "CreateCampaign",
+    "EditCampaign",
+    "MoveCampaign",
+    "DuplicateCampaign",
+    "DeleteCampaign",
+    "BulkAction",
   ]),
 };
 
