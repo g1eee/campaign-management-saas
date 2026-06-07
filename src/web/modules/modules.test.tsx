@@ -13,13 +13,12 @@ function wrap(ui: React.ReactElement) {
 describe("Campaign module", () => {
   it("renders the scheme form with a promo slider for SPV", () => {
     wrap(<Campaign />);
-    // slider for the seeded promo option
-    const sliders = screen.getAllByRole("slider");
+    // There are multiple sliders on the page (campaign discount + promo
+    // options); the promo slider is the one bounded 0..100.
+    const sliders = screen.getAllByRole("slider") as HTMLInputElement[];
     expect(sliders.length).toBeGreaterThanOrEqual(1);
-    // slider bounds reflect 0..100
-    const first = sliders[0] as HTMLInputElement;
-    expect(first.min).toBe("0");
-    expect(first.max).toBe("100");
+    const promoSlider = sliders.find((s) => s.min === "0" && s.max === "100");
+    expect(promoSlider).toBeDefined();
   });
 
   it("shows the real-time preview heading", () => {

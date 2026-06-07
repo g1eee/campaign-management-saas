@@ -19,6 +19,7 @@ import {
   MAX_PROMO_OPTIONS,
 } from "../../domain/types.js";
 import { sortBy } from "../../domain/collections.js";
+import { CampaignCalc } from "./CampaignCalc.js";
 
 const emptyScheme: CampaignScheme = {
   name: "",
@@ -307,6 +308,7 @@ export function Campaign() {
   const { role, refresh } = useApp();
   return (
     <div style={{ display: "grid", gap: theme.spacing(5) }}>
+      <CampaignCalc />
       {role === "SPV" && <CreateForm onCreated={refresh} />}
       <CampaignList />
     </div>

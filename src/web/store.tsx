@@ -17,13 +17,9 @@ import {
   StoreService,
   TaskService,
 } from "../api/operations.js";
-import {
-  Campaign,
-  CampaignCategory,
-  Role,
-  Store,
-  Task,
-} from "../domain/types.js";
+import { Campaign, CampaignCategory, Role, Store, Task } from "../domain/types.js";
+import { FeeRates, DEFAULT_FEE_RATES, Product } from "../domain/productCalc.js";
+import { SEED_PRODUCTS } from "../domain/products.js";
 
 export interface AppServices {
   repos: Repositories;
@@ -34,6 +30,16 @@ export interface AppServices {
   tasks: TaskService;
   reports: ReportService;
   masterData: MasterDataService;
+}
+
+/** A saved campaign calculation sheet. */
+export interface SavedCalc {
+  id: string;
+  name: string;
+  discount: number;
+  targetNpm: number;
+  rowDiscount: Record<string, number>;
+  includedIds: string[];
 }
 
 export interface AppState {
@@ -48,6 +54,15 @@ export interface AppState {
   notes: Record<number, string[]>;
   addNote: (dayTs: number, text: string) => void;
   removeNote: (dayTs: number, index: number) => void;
+  /** Editable product master + marketplace fee rates. */
+  products: Product[];
+  setProducts: (products: Product[]) => void;
+  feeRates: FeeRates;
+  setFeeRates: (rates: FeeRates) => void;
+  /** Saved campaign calculation sheets. */
+  savedCalcs: SavedCalc[];
+  saveCalc: (calc: SavedCalc) => void;
+  deleteCalc: (id: string) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -130,6 +145,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<Role>("SPV");
   const [version, setVersion] = useState(0);
   const [notes, setNotes] = useState<Record<number, string[]>>({});
+  const [products, setProducts] = useState<Product[]>(SEED_PRODUCTS);
+  const [feeRates, setFeeRates] = useState<FeeRates>(DEFAULT_FEE_RATES);
+  const [savedCalcs, setSavedCalcs] = useState<SavedCalc[]>([]);
 
   const services = useMemo<AppServices>(() => {
     const repos = createRepositories();
@@ -169,6 +187,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         [dayTs]: (prev[dayTs] ?? []).filter((_, i) => i !== index),
       })),
+    products,
+    setProducts,
+    feeRates,
+    setFeeRates,
+    savedCalcs,
+    saveCalc: (calc) =>
+      setSavedCalcs((prev) => {
+        const without = prev.filter((c) => c.id !== calc.id);
+        return [...without, calc];
+      }),
+    deleteCalc: (id) => setSavedCalcs((prev) => prev.filter((c) => c.id !== id)),
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
