@@ -9,6 +9,7 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import { createRepositories, Repositories } from "../infra/db/repositories.js";
 import { CampaignService } from "../api/campaign.js";
+import { BoardService } from "../api/board.js";
 import { AssetService } from "../api/assets.js";
 import {
   MasterDataService,
@@ -24,6 +25,7 @@ import { SEED_PRODUCTS } from "../domain/products.js";
 export interface AppServices {
   repos: Repositories;
   campaigns: CampaignService;
+  board: BoardService;
   assets: AssetService;
   stores: StoreService;
   notifications: NotificationService;
@@ -155,6 +157,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return {
       repos,
       campaigns: new CampaignService(repos),
+      board: new BoardService(repos),
       assets: new AssetService(repos),
       stores: new StoreService(repos),
       notifications: new NotificationService(repos),

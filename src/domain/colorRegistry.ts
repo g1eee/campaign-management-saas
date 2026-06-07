@@ -37,6 +37,27 @@ const CATEGORY_COLORS: Record<CampaignCategory, string> = {
 };
 
 /**
+ * Uniform neutral pastel fallback for a Campaign_Category that has no
+ * registered color (Requirement 2.5). Used by the board view to color
+ * Campaign cards whose category is not present in `CATEGORY_COLORS`.
+ */
+export const NEUTRAL_CATEGORY_COLOR = "#E6E6EA"; // soft neutral gray
+
+/**
+ * Returns the assigned category color, or the uniform neutral fallback when
+ * the category is missing/empty or has no registered color (Requirement 2.5).
+ * Unlike `colorFor`, this never throws for an unregistered value.
+ */
+export function categoryColorOrDefault(
+  category: CampaignCategory | string | null | undefined,
+): string {
+  if (category != null && Object.prototype.hasOwnProperty.call(CATEGORY_COLORS, category)) {
+    return CATEGORY_COLORS[category as CampaignCategory];
+  }
+  return NEUTRAL_CATEGORY_COLOR;
+}
+
+/**
  * Returns the assigned pastel color for a status or category value.
  * Pure: the result depends only on (kind, value), never on call site.
  */

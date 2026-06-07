@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 import { AuthAttempt, isExpired, lockoutState } from "./session.js";
+import { attemptHistoryArb, timestampArb } from "./testArbitraries.js";
 import {
   LOCKOUT_DURATION_MS,
   MAX_FAILED_ATTEMPTS,
@@ -100,5 +101,78 @@ describe("session", () => {
     const state = lockoutState(attempts, 7);
     expect(state.consecutiveFailures).toBe(1);
     expect(state.locked).toBe(false);
+  });
+});
+
+describe("session (campaign-manager)", () => {
+  // Feature: campaign-manager, Property 1: Lockout setelah lima kegagalan beruntun
+  // Validates: Requirements 1.3
+  it("Feature: campaign-manager, Property 1: Lockout setelah lima kegagalan beruntun", () => {
+    fc.assert(
+      fc.property(
+        attemptHistoryArb,
+        // Offset relative to the lockout-triggering failure so that `now` lands
+        // both inside and outside the 15-minute lockout window.
+        fc.integer({ min: -LOCKOUT_DURATION_MS, max: 2 * LOCKOUT_DURATION_MS }),
+        (attempts, nowOffset) => {
+          // Independently compute the expected consecutive-failure count and the
+          // timestamp of the failure that (re)triggers the lockout, mirroring the
+          // rule: a success resets the counter to zero (Requirement 1.3).
+          let consec = 0;
+          let triggeredAt: number | undefined;
+          for (const a of attempts) {
+            if (a.success) {
+              consec = 0;
+              triggeredAt = undefined;
+            } else {
+              consec += 1;
+              if (consec >= MAX_FAILED_ATTEMPTS) triggeredAt = a.at;
+            }
+          }
+
+          const base =
+            triggeredAt ??
+            (attempts.length ? attempts[attempts.length - 1].at : 0);
+          const now = base + nowOffset;
+
+          const state = lockoutState(attempts, now);
+
+          // The account is locked iff there are >= 5 consecutive failures at the
+          // end of the sequence AND `now` is still within 15 minutes of the
+          // triggering failure.
+          const expectedLocked =
+            consec >= MAX_FAILED_ATTEMPTS &&
+            triggeredAt !== undefined &&
+            now < triggeredAt + LOCKOUT_DURATION_MS;
+
+          expect(state.consecutiveFailures).toBe(consec);
+          expect(state.locked).toBe(expectedLocked);
+          if (expectedLocked) {
+            expect(state.lockedUntil).toBe(triggeredAt! + LOCKOUT_DURATION_MS);
+          }
+        },
+      ),
+      { numRuns: 100 },
+    );
+  });
+
+  // Feature: campaign-manager, Property 2: Kedaluwarsa sesi karena tidak aktif
+  // Validates: Requirements 1.5
+  it("Feature: campaign-manager, Property 2: Kedaluwarsa sesi karena tidak aktif", () => {
+    fc.assert(
+      fc.property(
+        timestampArb,
+        // Inactivity gap spanning both sides of the 30-minute threshold.
+        fc.integer({ min: 0, max: 4 * SESSION_INACTIVITY_MS }),
+        (lastActivity, delta) => {
+          const now = lastActivity + delta;
+          // The session is expired iff it has been inactive for >= 30 minutes.
+          expect(isExpired(lastActivity, now)).toBe(
+            delta >= SESSION_INACTIVITY_MS,
+          );
+        },
+      ),
+      { numRuns: 100 },
+    );
   });
 });

@@ -38,7 +38,10 @@ class ErrorBoundary extends React.Component<
 
 export function AppShell() {
   const { role, setRole, version } = useApp();
-  const [active, setActive] = useState<ModuleId>("Dashboard");
+  // Papan_Campaign is the default landing view after authentication (Req 13.4).
+  // The active module is held in state so it persists across navigation within
+  // the session (Req 13.5); navigating elsewhere and back is non-destructive.
+  const [active, setActive] = useState<ModuleId>("Campaign");
 
   // Visible nav = primary modules that are also permitted for the role.
   const permitted = permittedModules(role);
